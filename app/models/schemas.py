@@ -42,3 +42,12 @@ class ChunkedPdf:
     chunk_overlap: int
     chunks: tuple[TextChunk, ...]
     chunks_json_path: Path | None = None
+
+
+@dataclass(frozen=True)
+class VectorIndexResult:
+    source_path: Path
+    collection_name: str
+    model_name: str
+    vector_count: int
+    persist_directory: Path

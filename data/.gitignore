@@ -1,0 +1,8 @@
+# Keep generated app data local.
+*
+!.gitignore
+!.gitkeep
+!uploads/
+!extracted/
+!chunks/
+!vector_db/

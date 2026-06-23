@@ -1,8 +1,9 @@
 import streamlit as st
 
+from app.rag.chunker import chunk_and_persist, load_chunks
+from app.rag.embeddings import store_chunk_embeddings
 from app.services.pdf_extractor import extract_and_persist, load_extracted_text
 from app.services.pdf_storage import list_saved_pdfs, save_pdf
-from app.rag.chunker import chunk_and_persist, load_chunks
 from frontend.styles import UPLOAD_BOX_CSS
 
 
@@ -57,7 +58,11 @@ def render_upload_box() -> None:
         saved = save_pdf(uploaded_file.getvalue(), uploaded_file.name)
         extracted = extract_and_persist(saved.saved_path)
         chunked = chunk_and_persist(extracted)
+        vector_index = store_chunk_embeddings(chunked)
     except ValueError as exc:
+        st.error(str(exc))
+        return
+    except ImportError as exc:
         st.error(str(exc))
         return
     except OSError as exc:
@@ -78,6 +83,10 @@ def render_upload_box() -> None:
     st.info(
         f"Created **{len(chunked.chunks)}** chunk(s) "
         f"with size **{chunked.chunk_size}** and overlap **{chunked.chunk_overlap}**"
+    )
+    st.info(
+        f"Stored **{vector_index.vector_count}** embedding vector(s) "
+        f"in `{vector_index.collection_name}` using `{vector_index.model_name}`"
     )
 
     if extracted.full_text:

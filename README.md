@@ -17,7 +17,8 @@ pdf-rag-chat/
 ├── data/
 │   ├── uploads/          # locally stored uploaded PDFs
 │   ├── extracted/        # extracted text saved as JSON
-│   └── chunks/           # RAG-ready text chunks saved as JSON
+│   ├── chunks/           # RAG-ready text chunks saved as JSON
+│   └── vector_db/        # local vector database for embeddings
 ├── notebooks/
 ├── frontend/               # Streamlit UI
 ├── Dockerfile
@@ -41,12 +42,18 @@ Run the PDF upload UI:
 uv run streamlit run frontend/ui.py
 ```
 
-Upload a PDF using the drag-and-drop box or browse button. Files are saved locally under `data/uploads/`, text is extracted with **PyMuPDF** into `data/extracted/` as JSON, and the extracted text is split into character chunks under `data/chunks/`.
+Upload a PDF using the drag-and-drop box or browse button. Files are saved locally under `data/uploads/`, text is extracted with **PyMuPDF** into `data/extracted/` as JSON, the extracted text is split into character chunks under `data/chunks/`, and embeddings are stored in a local JSON vector store under `data/vector_db/`.
 
 Current chunking settings:
 
 - Chunk size: `500` characters
 - Chunk overlap: `100` characters
+
+Current embedding settings:
+
+- Embedding model: `BAAI/bge-small-en-v1.5`
+- Embedding library: `sentence-transformers`
+- Vector store: local JSON file with cosine similarity search
 
 Run tests:
 
