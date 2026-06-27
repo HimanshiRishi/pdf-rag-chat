@@ -1,5 +1,7 @@
 import streamlit as st
 
+from app.core.config import OLLAMA_MODEL
+from app.rag.chatbot import RagChatError, answer_question
 from app.rag.chunker import chunk_and_persist, load_chunks
 from app.rag.embeddings import store_chunk_embeddings
 from app.services.pdf_extractor import extract_and_persist, load_extracted_text
@@ -145,6 +147,57 @@ def render_saved_files() -> None:
         )
 
 
+def render_chatbot() -> None:
+    st.subheader("Chat with your PDF")
+
+    messages = st.session_state.setdefault("messages", [])
+    for message in messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+            if message.get("sources"):
+                with st.expander("Sources"):
+                    for source in message["sources"]:
+                        st.markdown(
+                            f"Page {source.page_number}, chunk {source.chunk_index} "
+                            f"· similarity {source.similarity:.3f}"
+                        )
+                        st.text(source.document)
+
+    question = st.chat_input("Ask a question about your uploaded PDF")
+    if not question:
+        return
+
+    messages.append({"role": "user", "content": question})
+    with st.chat_message("user"):
+        st.markdown(question)
+
+    with st.chat_message("assistant"):
+        try:
+            with st.spinner(f"Searching context and asking Ollama `{OLLAMA_MODEL}`..."):
+                rag_answer = answer_question(question)
+        except (ValueError, RagChatError, ImportError) as exc:
+            st.error(str(exc))
+            messages.append({"role": "assistant", "content": str(exc), "sources": ()})
+            return
+
+        st.markdown(rag_answer.answer)
+        with st.expander("Sources"):
+            for source in rag_answer.sources:
+                st.markdown(
+                    f"Page {source.page_number}, chunk {source.chunk_index} "
+                    f"· similarity {source.similarity:.3f}"
+                )
+                st.text(source.document)
+
+    messages.append(
+        {
+            "role": "assistant",
+            "content": rag_answer.answer,
+            "sources": rag_answer.sources,
+        }
+    )
+
+
 def main() -> None:
     st.set_page_config(
         page_title="PDF RAG Chat",
@@ -154,6 +207,7 @@ def main() -> None:
 
     render_upload_box()
     render_saved_files()
+    render_chatbot()
 
 
 if __name__ == "__main__":

@@ -51,3 +51,20 @@ class VectorIndexResult:
     model_name: str
     vector_count: int
     persist_directory: Path
+
+
+@dataclass(frozen=True)
+class RagSource:
+    chunk_id: str
+    document: str
+    page_number: int
+    chunk_index: int
+    similarity: float
+
+
+@dataclass(frozen=True)
+class RagAnswer:
+    question: str
+    answer: str
+    sources: tuple[RagSource, ...]
+    model_name: str

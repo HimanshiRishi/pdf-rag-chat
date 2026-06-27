@@ -55,6 +55,20 @@ Current embedding settings:
 - Embedding library: `sentence-transformers`
 - Vector store: local JSON file with cosine similarity search
 
+Current chat settings:
+
+- Local LLM provider: Ollama
+- Default Ollama model: `llama3.2`
+- Override the model with `OLLAMA_MODEL`
+- Override the Ollama server URL with `OLLAMA_BASE_URL`
+
+Before asking questions, make sure Ollama is running and the model is available:
+
+```bash
+ollama pull llama3.2
+ollama serve
+```
+
 Run tests:
 
 ```bash
